@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Візуальний тренажер: сортування, фільтри, умовне форматування</title>
+<style>
+:root{--bg:#f4f6f3;--card:#fff;--tx:#1f2a24;--mu:#5c6b62;--ac:#1d7a4f;--acbg:#e3f3ea;--er:#b3261e;--erbg:#fbe9e7;--bd:#d5dbd6;--b0:#cfe3ff;--b1:#ffd9a8;--sr:#fff3a6;--hd:#e9eee9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a16;--card:#1d2621;--tx:#e8eee9;--mu:#9fb0a5;--ac:#4cc58a;--acbg:#21382c;--er:#ff8a80;--erbg:#3a2220;--bd:#34413a;--b0:#1e3f6b;--b1:#6b4512;--sr:#5c5314;--hd:#27322b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a16;--card:#1d2621;--tx:#e8eee9;--mu:#9fb0a5;--ac:#4cc58a;--acbg:#21382c;--er:#ff8a80;--erbg:#3a2220;--bd:#34413a;--b0:#1e3f6b;--b1:#6b4512;--sr:#5c5314;--hd:#27322b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:1.25rem;margin:0 0 2px}.sub{color:var(--mu);margin:0 0 12px;font-size:.9rem}
+.dots{display:flex;gap:6px;margin-bottom:10px}.dots i{flex:1;height:8px;border-radius:4px;background:var(--bd)}.dots i.on{background:var(--ac)}.dots i.cur{background:var(--b1)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+.card h2{font-size:1.05rem;margin:0 0 6px}
+.fx{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:10px 0 0;font-family:ui-monospace,Consolas,monospace;min-height:38px;background:var(--card)}
+.fx b{color:var(--mu);font-style:italic;font-family:serif}
+.fx span.r0,.fx span.r1{padding:1px 4px;border-radius:4px}
+.r0{background:var(--b0)}.r1{background:var(--b1)}
+.scroll{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;font-family:ui-monospace,Consolas,monospace;font-size:.9rem;margin:0 auto}
+td,th{border:1px solid var(--bd);padding:5px 6px;text-align:center;min-width:58px;height:32px}
+th{background:var(--hd);color:var(--mu);font-weight:600;font-size:.8rem}
+td.c{cursor:pointer;transition:background .2s}
+td.t{font-family:system-ui,sans-serif;font-size:.8rem;background:var(--hd)}
+td.r0{background:var(--b0)}td.r1{background:var(--b1)}
+td.sel{outline:3px solid var(--ac);outline-offset:-3px;background:var(--sr)}
+td.bad{background:var(--erbg);color:var(--er);font-weight:700}
+td.fl{animation:p .5s}@keyframes p{from{transform:scale(1.25);background:var(--sr)}}
+.hint{color:var(--mu);font-size:.82rem;text-align:center;margin:0}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 12px;border:2px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font:inherit;font-family:ui-monospace,Consolas,monospace;cursor:pointer}
+.opt:hover{border-color:var(--ac)}.opt.sel{border-color:var(--ac);background:var(--acbg)}.opt.ok{border-color:var(--ac);background:var(--acbg)}.opt.bad{border-color:var(--er);background:var(--erbg)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0;padding:8px;border:2px solid var(--bd);border-radius:10px}
+.row.ok{border-color:var(--ac);background:var(--acbg)}.row.bad{border-color:var(--er);background:var(--erbg)}
+.row .d{flex:1;min-width:180px}
+.ref{font:700 1.3rem ui-monospace,Consolas,monospace;display:flex;align-items:center;gap:2px}
+.chip{width:34px;height:34px;border-radius:8px;border:2px dashed var(--mu);background:var(--card);color:var(--tx);font:700 1rem ui-monospace,monospace;cursor:pointer}
+.chip.on{border:2px solid var(--ac);background:var(--acbg);color:var(--ac)}
+.cp{font-size:.8rem;color:var(--mu);width:100%}
+.btn{margin-top:10px;padding:10px 18px;border:0;border-radius:10px;background:var(--ac);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#0b1a12}
+.btn:disabled{opacity:.5}
+.fb{margin-top:12px;padding:12px;border-radius:10px;font-size:.95rem}
+.fb.ok{background:var(--acbg);border-left:4px solid var(--ac)}.fb.er{background:var(--erbg);border-left:4px solid var(--er)}.fb p{margin:3px 0}
+.big{font-size:2rem;font-weight:700;color:var(--ac)}
+.sl{flex:1;min-width:130px;padding:8px;border-radius:8px;border:2px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}td{white-space:nowrap}.row .d{min-width:150px}th.hd{background:var(--ac);color:#fff}.cr{background:#f4b6b0;color:#5a1410}.cy{background:#fff0a0;color:#4d4100}.cg{background:#bfe8c9;color:#0f4a25}.opt{font-family:inherit}input.sl{flex:0 1 140px;min-width:100px}label{margin-right:14px;cursor:pointer}td.c{cursor:default}.mis{outline:3px dashed var(--er);outline-offset:-3px}</style>
+</head>
+<body>
+<main>
+<h1>Візуальний тренажер: сортування, фільтри, умовне форматування</h1>
+<p class="sub">9 клас · §16 упорядкування даних, фільтрація, умовне форматування</p>
+<div class="dots" id="dots"></div>
+<div id="app"></div>
+</main>
+<script>
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function shuf(a){for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1)),x=a[k];a[k]=a[j];a[j]=x}return a}
+function gv(id){return document.getElementById(id).value}
+function tb(head,rows,o){o=o||{};var h='<div class="scroll"><table><tr><th></th>'+head.map(function(x,c){return'<th class="hd">'+x+(o.af?(o.fl===c?" 🔻":" ▾"):"")+"</th>"}).join("")+"</tr>";
+ rows.forEach(function(r,k){h+="<tr><th>"+(o.nums?o.nums[k]:k+2)+"</th>"+r.map(function(x,c){return'<td class="c '+(o.cls?o.cls(k,c,r):"")+'">'+esc(x)+"</td>"}).join("")+"</tr>"});return h+"</table></div>"}
+function cmp(lv){return function(a,b){for(var k=0;k<lv.length;k++){var c=lv[k][0],x=a[c],y=b[c],r=typeof x=="number"?x-y:String(x).localeCompare(y,"uk");if(r)return r*lv[k][1]}return 0}}
+function ft(x,op,v){if(v==="")return true;v=+v;return op==">"?x>v:op=="<"?x<v:op==">="?x>=v:op=="<="?x<=v:op=="="?x==v:x!=v}
+var H1=["Країна","Місто","Кількість"],D1=[["Україна","Одеса",3],["Єгипет","Шарм Ель Шейх",7],["Україна","Львів",20],["Туреччина","Кемер",20],["Єгипет","Хургада",34],["Україна","Буковель",54],["Туреччина","Анталія",86]];
+var T=[
+{k:"mc",title:"Вимоги до списку",q:"Цю таблицю не можна опрацьовувати як список (сортувати, фільтрувати). Чому?",head:["Назва","Висота, м"],rows:[["Говерла",2061],["Брескул",1911],["",""],["Яровиця",1587]],cls:function(k,c,r){return r[0]===""?"bad":""},
+ opts:[["У ній є порожній рядок",1,"У списку не може бути порожніх рядків і стовпців. Перший рядок — назви полів, кількість стовпців постійна."],
+ ["Перший рядок містить заголовки стовпців",0,"Навпаки: перший рядок списку саме й має містити назви стовпців (полів)."],
+ ["Усі значення в стовпці — однотипні",0,"Однотипні дані в стовпці — це нормальна властивість списку, а не вада."],
+ ["У таблиці лише два стовпці",0,"Кількість стовпців може бути будь-якою, головне — щоб вона була постійною."]]},
+{k:"sort",title:"Сортування за кількома стовпцями",q:"Впорядкуйте таблицю продажу путівок: країни — за алфавітом, а в межах однієї країни міста — теж за алфавітом. Налаштуйте рівні сортування та натисніть «Перевірити».",
+ head:H1,rows:D1,exp:[[0,1],[1,1]],good:"Перше з вибраних полів визначає первинне сортування, а рівень «Потім за» працює лише тоді, коли значення першого збігаються.",hint:"Спочатку впорядкуйте за країною, а «Потім за» — за містом."},
+{k:"sort",title:"Сортування за спаданням",q:"Покажіть угорі найбільші продажі: за кількістю путівок від більшого до меншого, а коли кількість однакова — за назвою міста за алфавітом.",
+ head:H1,rows:D1,exp:[[2,-1],[1,1]],good:"Перший рівень — «Кількість» за спаданням, другий рівень розв’язує збіг: Кемер і Львів мають по 20, тому йдуть за алфавітом.",hint:"Найбільші значення мають бути вгорі — це спадання. Для однакових кількостей потрібен другий рівень."},
+{k:"flt",title:"Користувацький автофільтр",q:"Відобразіть річки, протяжність яких в Україні більша за 500 км, але менша за 700 км. Налаштуйте умови для стовпця «Протяжність» і натисніть «Перевірити».",
+ head:["Назва річки","Куди впадає","Протяжність, км"],rows:[["Псел","Дніпро",717],["Дністер","Чорне море",705],["Сіверський Донець","Дон",672],["Горинь","Прип’ять",659],["Десна","Дніпро",591],["Інгулець","Дніпро",549],["Рось","Дніпро",346]],col:2,
+ pred:function(r){return r[2]>500&&r[2]<700},good:"Умови поєднано оператором І: рядок відображається, лише коли істинні обидві умови. Решта рядків не видалені, а приховані (зверніть увагу на номери рядків).",hint:"Оператор І вимагає виконання обох умов, а АБО — хоча б однієї (тоді відобразяться майже всі рядки). Перевірте знаки «більше» і «менше»."},
+{k:"mc",title:"Логіка в автофільтрі",q:"У вікні «Користувацький автофільтр» для поля «Прізвище» задано умови: «дорівнює Довгаль» І «дорівнює Петренко». Які рядки буде відображено?",head:["Прізвище"],rows:[["Довгаль"],["Петренко"],["Іваненко"]],
+ opts:[["Жодного рядка",1,"З оператором І мають бути істинні обидві умови, а прізвище не може дорівнювати двом різним значенням одночасно. З оператором АБО відобразилися б обидва рядки."],
+ ["Лише рядок із прізвищем Довгаль",0,"Другу умову також треба виконати — а з оператором І це неможливо."],
+ ["Лише рядок із прізвищем Петренко",0,"Першу умову також треба виконати — а з оператором І це неможливо."],
+ ["Обидва рядки: Довгаль і Петренко",0,"Так було б для оператора АБО. З оператором І жоден рядок не задовольняє обидві умови."]]},
+{k:"sel",title:"Умовне форматування: суперечливі правила",q:"До клітинок застосовано два правила: 1) значення більші за 5 — червона заливка; 2) (додане пізніше) значення менші за 7 — зелена заливка. Яким кольором зафарбується кожна клітинка?",
+ head:["Значення"],data:[[5],[6],[7]],col:0,ch:["червона","зелена","без заливки"],map:function(r,v){return v[r[0]-5]},
+ rows:[["Клітинка зі значенням 5","зелена","5 не більше за 5, але менше за 7 — діє лише правило 2."],["Клітинка зі значенням 6","зелена","6 задовольняє обидва правила. Коли правила суперечать, «сильнішим» є правило, встановлене пізніше, — зелене."],["Клітинка зі значенням 7","червона","7 більше за 5 (правило 1), але не менше за 7 — правило 2 не діє."]]},
+{k:"cf",title:"Умовне форматування: таблиця продажу",q:"Налаштуйте умовне форматування стовпця «Кількість» за такими правилами: значення менші за 10 — фон червоного відтінку; значення від 11 до 40 — фон жовтого; значення більші за 40 — фон зеленого. Для кожного правила оберіть умову, введіть число (для умови «між» — два числа) та колір заливки. Таблиця змінюватиметься одразу.",
+ head:H1,data:D1,col:2,exp:function(x){return x<10?"червона":x<=40?"жовта":"зелена"}}
+];
+var i=0,pts=0,done=[],tries=0,sel=-1,app=document.getElementById("app");
+function dots(){document.getElementById("dots").innerHTML=T.map(function(_,k){return"<i class='"+(k<i?"on":k==i?"cur":"")+"'></i>"}).join("")}
+function render(){
+ if(i>=T.length)return fin();
+ var t=T[i];tries=0;sel=-1;dots();
+ var h='<div class="card"><h2>'+(i+1)+". "+t.title+"</h2><p>"+t.q+"</p>";
+ if(t.k=="mc"){h+=tb(t.head,t.rows,{cls:t.cls});shuf(t.opts).forEach(function(o,k){h+='<button class="opt" onclick="pick('+k+')" id="o'+k+'">'+esc(o[0])+"</button>"})}
+ else if(t.k=="sort"){var cs=t.head.map(function(x,k){return'<option value="'+k+'">'+x+"</option>"}).join(""),or='<option value="1">за зростанням (А→Я, 0→9)</option><option value="-1">за спаданням (Я→А, 9→0)</option>';
+  h+='<div id="gr">'+tb(t.head,t.rows)+'</div><div class="row"><b>Сортувати за</b><select class="sl" id="c0">'+cs+'</select><select class="sl" id="d0">'+or+'</select></div><div class="row"><b>Потім за</b><select class="sl" id="c1"><option value="">— немає —</option>'+cs+'</select><select class="sl" id="d1">'+or+"</select></div>"}
+ else if(t.k=="flt"){var ops=[[">","більше"],["<","менше"],[">=","більше або дорівнює"],["<=","менше або дорівнює"],["=","дорівнює"],["<>","не дорівнює"]].map(function(o){return'<option value="'+esc(o[0])+'">'+o[1]+"</option>"}).join("");
+  var ro=function(k){return'<div class="row"><select class="sl" id="o'+k+'">'+ops+'</select><input class="sl" id="v'+k+'" type="number" placeholder="значення"></div>'};
+  h+='<div id="gr">'+tb(t.head,t.rows,{af:1})+"</div><p><b>Користувацький автофільтр:</b> показати лише ті рядки, значення яких</p>"+ro(0)+'<div class="row"><label><input type="radio" name="m" value="and" checked> І</label><label><input type="radio" name="m" value="or"> АБО</label></div>'+ro(1)}
+ else if(t.k=="cf"){var co=shuf(["червона","жовта","зелена"]).map(function(x){return"<option>"+x+"</option>"}).join(""),ops='<option value="">— умова —</option><option value="lt">менше за</option><option value="gt">більше за</option><option value="bt">між</option>';
+  h+='<div id="gr"></div>';for(var k=0;k<3;k++)h+='<div class="row"><b>Правило '+(k+1)+'</b><select class="sl" id="p'+k+'" onchange="paintCf()">'+ops+'</select><input class="sl" id="a'+k+'" type="number" placeholder="число" oninput="paintCf()"><input class="sl" id="b'+k+'" type="number" placeholder="друге число (для «між»)" oninput="paintCf()"><select class="sl" id="g'+k+'" onchange="paintCf()"><option value="">— колір —</option>'+co+"</select></div>"}
+ else{h+='<div id="gr"></div>';var ch=shuf(t.ch.slice());t.rows.forEach(function(r,k){h+='<div class="row" id="tr'+k+'"><div class="d">'+r[0]+'</div><select id="s'+k+'" class="sl" onchange="paint()"><option value="">— оберіть —</option>'+ch.map(function(x){return"<option>"+x+"</option>"}).join("")+"</select></div>"})}
+ h+='<button class="btn" id="chk" onclick="check()">Перевірити</button><div id="fb"></div></div>';
+ app.innerHTML=h;if(t.k=="sel")paint();if(t.k=="cf")paintCf();
+}
+function paint(){var t=T[i],v=t.rows.map(function(r,k){return gv("s"+k)}),m={"червона":"cr","жовта":"cy","зелена":"cg"};
+ document.getElementById("gr").innerHTML=tb(t.head,t.data,{cls:function(k,c,r){return c==t.col?(m[t.map(r,v)]||""):""}})}
+function cfc(x){var c="";for(var k=0;k<3;k++){var o=gv("p"+k),a=gv("a"+k),b=gv("b"+k),g=gv("g"+k);if(!g||!o||a==="")continue;var y=+a,m=o=="lt"?x<y:o=="gt"?x>y:(b!==""&&x>=y&&x<=+b);if(m)c=g}return c}
+var CM={"червона":"cr","жовта":"cy","зелена":"cg"};
+function paintCf(chk){var t=T[i],bad=0;document.getElementById("gr").innerHTML=tb(t.head,t.data,{cls:function(k,c,r){if(c!=t.col)return"";var g=cfc(r[2]),mis=chk&&g!=t.exp(r[2]);if(mis)bad++;return(CM[g]||"")+(mis?" mis":"")}});return bad}
+function pick(k){if(document.getElementById("chk").dataset.d)return;sel=k;T[i].opts.forEach(function(_,j){document.getElementById("o"+j).className="opt"+(j==k?" sel":"")})}
+function ok(first,msg){
+ if(first)pts++;done[i]=first;
+ document.getElementById("fb").innerHTML='<div class="fb ok"><p><b>'+(first?"Правильно!":"Правильно (не з першої спроби)")+"</b></p>"+msg+"</div>";
+ var b=document.getElementById("chk");b.dataset.d=1;b.textContent=i<T.length-1?"Далі →":"Результат";b.onclick=function(){i++;render()}}
+function er(msg){document.getElementById("fb").innerHTML='<div class="fb er"><p><b>Поки що неправильно.</b></p>'+msg+"<p>Спробуйте ще раз.</p></div>"}
+function check(){
+ var t=T[i];
+ if(t.k=="mc"){if(sel<0){document.getElementById("fb").innerHTML='<div class="fb er">Спочатку оберіть відповідь.</div>';return}
+  tries++;var o=t.opts[sel];document.getElementById("o"+sel).className="opt "+(o[1]?"ok":"bad");return o[1]?ok(tries==1,"<p>"+o[2]+"</p>"):er("<p>"+o[2]+"</p>")}
+ tries++;
+ if(t.k=="sel"){var n=0,m="";t.rows.forEach(function(r,k){var g=gv("s"+k)==r[1];document.getElementById("tr"+k).className="row "+(g?"ok":"bad");if(g){n++;m+="<p>✔ <b>"+r[0]+" → "+r[1]+".</b> "+r[2]+"</p>"}});
+  return n==t.rows.length?ok(tries==1,m):er(m+"<p>Неправильних відповідей: "+(t.rows.length-n)+" (виділені червоним).</p>")}
+ if(t.k=="cf"){var bd=paintCf(1);return bd?er("<p>Клітинок із неправильним кольором: "+bd+" (позначені пунктиром).</p><p>Перевірте умови й числа: для «від 11 до 40» потрібна умова «між» із двома числами, а для кожного правила має бути обрано колір.</p>"):ok(tries==1,"<p>Для кожної клітинки діє правило, умові якого відповідає її значення. Умова «між» охоплює значення від 11 до 40 включно. Якщо кілька правил підходять одночасно, «сильнішим» є те, що встановлено пізніше.</p>")}
+ if(t.k=="sort"){var lv=[[+gv("c0"),+gv("d0")]];if(gv("c1")!=="")lv.push([+gv("c1"),+gv("d1")]);
+  var res=t.rows.slice().sort(cmp(lv)),ex=t.rows.slice().sort(cmp(t.exp)),bad=res.map(function(r,k){return r.join()!=ex[k].join()});
+  document.getElementById("gr").innerHTML=tb(t.head,res,{cls:function(k){return bad[k]?"bad":""}});
+  return bad.some(Boolean)?er("<p>Рядки, що стоять не на своєму місці, виділено червоним.</p><p>"+t.hint+"</p>"):ok(tries==1,"<p>"+t.good+"</p>")}
+ var f=[[gv("o0"),gv("v0")],[gv("o1"),gv("v1")]],and=document.querySelector("input[name=m]:checked").value=="and",vis=[],nums=[],good=true;
+ t.rows.forEach(function(r,k){var a=ft(r[t.col],f[0][0],f[0][1]),b=ft(r[t.col],f[1][0],f[1][1]),p=and?a&&b:a||b;if(p){vis.push(r);nums.push(k+2)}if(p!=t.pred(r))good=false});
+ document.getElementById("gr").innerHTML=tb(t.head,vis,{nums:nums,af:1,fl:t.col,cls:function(k,c,r){return t.pred(r)?"":"bad"}});
+ return good?ok(tries==1,"<p>"+t.good+"</p>"):er("<p>Відображено рядків: "+vis.length+", а має бути: "+t.rows.filter(t.pred).length+". Зайві рядки виділено червоним.</p><p>"+t.hint+"</p>")
+}
+function fin(){
+ dots();var p=pts/T.length,m=p==1?"Відмінно! Ви впевнено впорядковуєте, фільтруєте й форматуєте дані.":p>=.6?"Добре! Повторіть теми з помилками.":"Варто повторити сортування, фільтрацію та умовне форматування.";
+ var h='<div class="card"><h2>Результат</h2><div class="big">'+pts+" / "+T.length+"</div><p>"+m+"</p><ul>";
+ T.forEach(function(t,k){h+="<li>"+(done[k]?"✔":"✘")+" "+t.title+(done[k]?"":" — потребує повторення")+"</li>"});
+ app.innerHTML=h+'</ul><p class="hint">Пам’ятайте: фільтр не видаляє рядки, а лише приховує їх.</p><button class="btn" onclick="i=0;pts=0;done=[];render()">Пройти ще раз</button></div>'}
+render();
+</script>
+</body>
+</html>
